@@ -11,7 +11,14 @@ export default <Config>{
         './error.vue'
     ],
     theme: {
-        extend: {},
+        screens: {
+            xs: '320px',
+            sm: '375px',
+            md: '768px',
+            lg: '1024px',
+            xl: '1366px',
+            xxl: '1920px',
+        },
     },
     plugins: [primeui],
     darkMode: ['class', '.dark-mode'],

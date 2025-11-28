@@ -1,7 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import MyPreset from './assets/theme.js'
+import MyPreset from './app/assets/theme.js'
 
 export default defineNuxtConfig({
+  css: ['~/assets/scss/main.scss', 'primeicons/primeicons.css'],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: [

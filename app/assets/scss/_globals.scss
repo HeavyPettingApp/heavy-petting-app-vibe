@@ -1,0 +1,24 @@
+* {
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-color: unset transparent;
+    scrollbar-width: thin;
+}
+
+html,
+body {
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    // background: var(--background);
+    // font-family: var(--font-family);
+    transition: var(--transition);
+    min-height: 100vh;
+    // color: var(--p-text-color);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: lining-nums;
+    -moz-osx-font-smoothing: grayscale;
+    width: 100vw;
+}

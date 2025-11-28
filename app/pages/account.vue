@@ -25,7 +25,7 @@ watchEffect(() => {
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Account Settings</h1>
       
       <div v-if="user" class="space-y-6">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-4">
           <Avatar :label="user.email?.charAt(0).toUpperCase()" size="xlarge" shape="circle" class="bg-blue-500 text-white" />
           <div>
             <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">{{ user.email }}</h2>
