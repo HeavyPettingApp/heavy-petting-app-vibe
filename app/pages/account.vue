@@ -28,7 +28,7 @@ watchEffect(() => {
         <!-- <pre>{{ user }}</pre>
           <pre>{{ userProfile }}</pre> -->
         <div class="flex items-center gap-4">
-          <Avatar :image="userProfile?.avatar_url" :label="!userProfile?.avatar_url ? user.email?.charAt(0).toUpperCase() : ''" size="xlarge" shape="circle" class="bg-blue-500 text-white" />
+          <Avatar :image="userProfile?.avatar_url" :label="!userProfile?.avatar_url ? user.email?.charAt(0).toUpperCase() : ''" size="xlarge" shape="circle" class="flex-none bg-blue-500 text-white" />
           <div>
             <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
               {{ user.email }}
