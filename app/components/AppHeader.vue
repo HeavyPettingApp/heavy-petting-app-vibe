@@ -1,5 +1,5 @@
 <script setup>
-const { user } = useAuth()
+const { user, userProfile } = useAuth()
 const { isDark, toggleDarkMode } = useDarkMode()
 </script>
 
@@ -8,12 +8,13 @@ const { isDark, toggleDarkMode } = useDarkMode()
     <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
       <NuxtLink to="/" class="text-xl font-bold text-gray-800 dark:text-white">Heavy Petting</NuxtLink>
       <div class="flex items-center gap-4">
-        <NuxtLink to="/" class="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white">Home</NuxtLink>
+        <!-- <NuxtLink to="/" class="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white">Home</NuxtLink> -->
       
 
         <template v-if="user">
           <NuxtLink to="/account">
-            <Avatar :label="user.email?.charAt(0).toUpperCase()" shape="circle" class="bg-blue-500 text-white cursor-pointer" />
+            <Avatar :image="userProfile?.avatar_url" :label="!userProfile?.avatar_url ? user.email?.charAt(0).toUpperCase() : ''" shape="circle" class="bg-blue-500 text-white cursor-pointer" />
+
           </NuxtLink>
         </template>
         
