@@ -25,5 +25,8 @@ export default defineNuxtConfig({
         }
       }
     }
+  },
+  build: {
+    transpile: ['vue-preview-imgs', 'photoswipe']
   }
 })

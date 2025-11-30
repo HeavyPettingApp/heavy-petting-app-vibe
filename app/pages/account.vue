@@ -22,7 +22,10 @@ watchEffect(() => {
 <template>
   <div class="container mx-auto p-8">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Account Settings</h1>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
+        <Button label="Edit Profile" icon="pi pi-user-edit" @click="router.push('/edit-user-profile')" />
+      </div>
       
       <div v-if="user" class="space-y-6">
         <!-- <pre>{{ user }}</pre>
