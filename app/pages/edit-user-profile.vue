@@ -99,6 +99,7 @@ const resolver = zodResolver(
       personal_email: z.string().email({ message: "Invalid email address." }).min(1, { message: "Personal email is required." }),
       phone: z.string().min(10, { message: "Phone number is required and must be at least 10 digits." }),
       address: z.string({ invalid_type_error: "Street address is required.", required_error: "Street address is required." }).min(1, { message: "Street address is required." }),
+      address2: z.string().optional(),
       city: z.string({ invalid_type_error: "City is required.", required_error: "City is required." }).min(1, { message: "City is required." }),
       state: z.string({ invalid_type_error: "State/Province is required.", required_error: "State/Province is required." }).min(1, { message: "State/Province is required." }),
       zip: z.string({ invalid_type_error: "ZIP/Postal Code is required.", required_error: "ZIP/Postal Code is required." }).min(1, { message: "ZIP/Postal Code is required." }),
@@ -223,6 +224,8 @@ const initGoogleMapsAutocomplete = () => {
     // Clear the autocomplete's full address and set only the street address
     nextTick(() => {
       inputElement.value = streetAddress
+      // Trigger input event to notify the form of the change
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }))
       
       // Focus on address2
       const address2Input = address2InputRef.value?.$el?.querySelector('input') || address2InputRef.value?.$el
@@ -253,6 +256,12 @@ const onFormSubmit = async (e) => {
         updated_at: new Date(),
         address_line_2: e.values.address2, // Map back
         avatar_url: initialValues.value.avatar_url, // Explicitly include avatar_url from initialValues
+        // Explicitly include address fields from initialValues (disabled fields + address that might not update form state)
+        address: initialValues.value.address,
+        city: initialValues.value.city,
+        state: initialValues.value.state,
+        zip: initialValues.value.zip,
+        country: initialValues.value.country,
       }
 
       // Cleanup
