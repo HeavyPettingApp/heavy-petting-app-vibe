@@ -105,7 +105,9 @@ const resolver = zodResolver(
       country: z.string({ invalid_type_error: "Country is required.", required_error: "Country is required." }).min(1, { message: "Country is required." }),
       gender: z.string().nullable().refine((val) => val !== null, { message: "Gender is required." }),
       employment_type: z.string().nullable().refine((val) => val !== null, { message: "Employment type is required." }),
+      role: z.string().nullable().refine((val) => val !== null, { message: "Role/Position is required." }),
       spoken_languages: z.array(z.string()).min(1, { message: "At least one spoken language is required." }),
+      specialties: z.array(z.string()).min(1, { message: "At least one specialty is required." }),
       medical_license_number: z.string().min(1, { message: "Medical License Number is required." }).regex(/^[A-Za-z0-9]{5,20}$/, { message: "Invalid Medical License Number format." }),
       medical_license_expiration_date: z.date().nullable().refine((date) => date !== null, { message: "License Expiration Date is required." }),
       dea_number: z.string().optional().refine((val) => !val || /^[A-Za-z]{2}[0-9]{7}$/.test(val), { message: "Invalid DEA Number format." }),
@@ -247,7 +249,11 @@ const onFormSubmit = async (e) => {
         id: user.value.sub,
         updated_at: new Date(),
         address_line_2: e.values.address2, // Map back
+        avatar_url: initialValues.value.avatar_url, // Explicitly include avatar_url from initialValues
       }
+
+      console.log('Form submission - avatar_url:', initialValues.value.avatar_url)
+      console.log('Updates object:', updates)
 
       // Cleanup
       delete updates.address2
@@ -257,6 +263,9 @@ const onFormSubmit = async (e) => {
       if (error) throw error
 
       toast.add({ severity: 'success', summary: 'Profile Updated', life: 3000 })
+      
+      // Navigate back to account page
+      //router.push('/account')
     } catch (error) {
       console.error('Update error:', error)
       toast.add({ severity: 'error', summary: 'Update Failed', detail: error.message, life: 3000 })
@@ -267,20 +276,33 @@ const onFormSubmit = async (e) => {
 }
 
 const onAvatarUpload = (event) => {
-    if (event.path) {
-        initialValues.value.avatar_url = event.path
+  if (event.path) {
+    // Construct the full public URL from the relative path
+    const supabaseUrl = supabase.storage.from('media').getPublicUrl(event.path).data.publicUrl
+    initialValues.value.avatar_url = supabaseUrl
+    
+    console.log('Avatar uploaded - relative path:', event.path)
+    console.log('Avatar uploaded - full URL:', supabaseUrl)
+    
+    // Trigger validation
+    const avatarInput = avatarREF.value?.$el
+    if (avatarInput) {
+      avatarInput.value = supabaseUrl
+      avatarInput.dispatchEvent(new Event("input", { bubbles: true }))
     }
+  }
 }
 
 const onFilesUpdated = (files) => {
-  const name = files[0]?.file.name || ""
-  initialValues.value.avatar_url = name
-  
-  // Trigger validation
-  const avatarInput = avatarREF.value?.$el
-  if (avatarInput) {
-      avatarInput.value = name
+  // This is called when files are selected but not yet uploaded
+  // We just use this to clear validation errors, actual path comes from onAvatarUpload
+  if (files && files.length > 0) {
+    const avatarInput = avatarREF.value?.$el
+    if (avatarInput) {
+      // Set a temporary value to pass validation
+      avatarInput.value = "uploading"
       avatarInput.dispatchEvent(new Event("input", { bubbles: true }))
+    }
   }
 }
 
@@ -330,7 +352,7 @@ const updateSignatureSvgData = (svgData) => {
                   :maxFiles="1"
                   @upload-complete="onAvatarUpload"
                   @files-updated="onFilesUpdated"
-                  :patientId="user?.id"
+                  :patientId="user?.sub"
                 />
                 <InputText ref="avatarREF" name="avatar_url" type="hidden" />
                 <Message v-if="$form.avatar_url?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.avatar_url.error.message }}</Message>
@@ -450,7 +472,7 @@ const updateSignatureSvgData = (svgData) => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
            <div class="flex flex-col gap-1">
             <label class="font-medium text-surface-700 dark:text-surface-300">Role / Position</label>
-            <Select name="role" :options="rolePositions" optionLabel="label" optionValue="value" :modelValue="initialValues.role" disabled class="w-full" />
+            <Select name="role" :options="rolePositions" optionLabel="label" optionValue="value" :modelValue="initialValues.role" class="w-full" />
           </div>
            <div class="flex flex-col gap-1">
             <label class="font-medium text-surface-700 dark:text-surface-300">Employment Type</label>
