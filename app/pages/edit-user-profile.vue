@@ -220,10 +220,13 @@ const initGoogleMapsAutocomplete = () => {
     initialValues.value.zip = postcode
     initialValues.value.country = country
     
-    // Focus on address2
+    // Clear the autocomplete's full address and set only the street address
     nextTick(() => {
-        const address2Input = address2InputRef.value?.$el?.querySelector('input') || address2InputRef.value?.$el
-        address2Input?.focus()
+      inputElement.value = streetAddress
+      
+      // Focus on address2
+      const address2Input = address2InputRef.value?.$el?.querySelector('input') || address2InputRef.value?.$el
+      address2Input?.focus()
     })
   })
 }
@@ -251,9 +254,6 @@ const onFormSubmit = async (e) => {
         address_line_2: e.values.address2, // Map back
         avatar_url: initialValues.value.avatar_url, // Explicitly include avatar_url from initialValues
       }
-
-      console.log('Form submission - avatar_url:', initialValues.value.avatar_url)
-      console.log('Updates object:', updates)
 
       // Cleanup
       delete updates.address2
@@ -422,22 +422,22 @@ const updateSignatureSvgData = (svgData) => {
              </div>
              <div class="flex flex-col gap-1">
                 <label class="font-medium text-surface-700 dark:text-surface-300">City</label>
-                <InputText name="city" placeholder="City" class="w-full" />
+                <InputText name="city" :modelValue="initialValues.city" placeholder="City" disabled class="w-full" />
                 <Message v-if="$form.city?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.city.error.message }}</Message>
              </div>
              <div class="flex flex-col gap-1">
                 <label class="font-medium text-surface-700 dark:text-surface-300">State/Province</label>
-                <InputText name="state" placeholder="State/Province" class="w-full" />
+                <InputText name="state" :modelValue="initialValues.state" placeholder="State/Province" disabled class="w-full" />
                 <Message v-if="$form.state?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.state.error.message }}</Message>
              </div>
              <div class="flex flex-col gap-1">
                 <label class="font-medium text-surface-700 dark:text-surface-300">ZIP/Postal Code</label>
-                <InputText name="zip" placeholder="ZIP/Postal Code" class="w-full" />
+                <InputText name="zip" :modelValue="initialValues.zip" placeholder="ZIP/Postal Code" disabled class="w-full" />
                 <Message v-if="$form.zip?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.zip.error.message }}</Message>
              </div>
              <div class="flex flex-col gap-1">
                 <label class="font-medium text-surface-700 dark:text-surface-300">Country</label>
-                <InputText name="country" placeholder="Country" class="w-full" />
+                <InputText name="country" :modelValue="initialValues.country" placeholder="Country" disabled class="w-full" />
                 <Message v-if="$form.country?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.country.error.message }}</Message>
              </div>
            </div>

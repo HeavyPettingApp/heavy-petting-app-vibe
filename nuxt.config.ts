@@ -28,5 +28,10 @@ export default defineNuxtConfig({
   },
   build: {
     transpile: ['vue-preview-imgs', 'photoswipe']
+  },
+  runtimeConfig: {
+    public: {
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
+    }
   }
 })
