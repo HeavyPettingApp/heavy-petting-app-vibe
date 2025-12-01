@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^2.0.2",
     "@nuxtjs/supabase": "^2.0.1",
     "@pqina/filepond-plugin-image-editor": "^9.2.4",
     "@pqina/pintura": "^8.95.3",

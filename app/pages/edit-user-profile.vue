@@ -153,9 +153,10 @@ watch(userProfile, (profile) => {
       signature: profile.signature || "",
       
       // Ensure arrays and dates are correctly formatted
-      dob: profile.dob ? new Date(profile.dob) : null,
-      medical_license_expiration_date: profile.medical_license_expiration_date ? new Date(profile.medical_license_expiration_date) : null,
-      medical_school_year_of_graduation: profile.medical_school_year_of_graduation ? new Date(profile.medical_school_year_of_graduation) : null,
+      // Parse dates as local timezone to avoid timezone offset issues
+      dob: profile.dob ? new Date(profile.dob + 'T00:00:00') : null,
+      medical_license_expiration_date: profile.medical_license_expiration_date ? new Date(profile.medical_license_expiration_date + 'T00:00:00') : null,
+      medical_school_year_of_graduation: profile.medical_school_year_of_graduation ? new Date(profile.medical_school_year_of_graduation + 'T00:00:00') : null,
       spoken_languages: Array.isArray(profile.spoken_languages) ? profile.spoken_languages : [],
       specialties: Array.isArray(profile.specialties) ? profile.specialties : [],
       board_certifications: Array.isArray(profile.board_certifications) ? profile.board_certifications : [],
@@ -243,7 +244,7 @@ const onFormSubmit = async (e) => {
 
       const updates = {
         ...e.values,
-        id: user.value.id,
+        id: user.value.sub,
         updated_at: new Date(),
         address_line_2: e.values.address2, // Map back
       }
@@ -306,7 +307,7 @@ const updateSignatureSvgData = (svgData) => {
       <Button label="Back" icon="pi pi-arrow-left" text @click="router.back()" />
     </div>
 
-    <Form v-slot="$form" :initialValues="initialValues" :resolver="resolver" @submit="onFormSubmit" class="space-y-8">
+    <Form :key="userProfile?.id || 'empty'" v-slot="$form" :initialValues="initialValues" :resolver="resolver" @submit="onFormSubmit" class="space-y-8">
       
       <!-- Account Info -->
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
@@ -363,7 +364,7 @@ const updateSignatureSvgData = (svgData) => {
           </div>
           <div class="flex flex-col gap-1">
             <label class="font-medium text-surface-700 dark:text-surface-300">Date of Birth</label>
-            <DatePicker name="dob" dateFormat="mm/dd/yy" showIcon class="w-full" />
+            <DatePicker name="dob" :modelValue="initialValues.dob" dateFormat="mm/dd/yy" showIcon class="w-full" />
             <Message v-if="$form.dob?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.dob.error.message }}</Message>
           </div>
           <div class="flex flex-col gap-1">
@@ -468,7 +469,7 @@ const updateSignatureSvgData = (svgData) => {
           </div>
            <div class="flex flex-col gap-1">
             <label class="font-medium text-surface-700 dark:text-surface-300">License Expiration Date</label>
-            <DatePicker name="medical_license_expiration_date" dateFormat="mm/dd/yy" showIcon class="w-full" />
+            <DatePicker name="medical_license_expiration_date" :modelValue="initialValues.medical_license_expiration_date" dateFormat="mm/dd/yy" showIcon class="w-full" />
             <Message v-if="$form.medical_license_expiration_date?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.medical_license_expiration_date.error.message }}</Message>
           </div>
            <div class="flex flex-col gap-1">
@@ -493,7 +494,7 @@ const updateSignatureSvgData = (svgData) => {
           </div>
            <div class="flex flex-col gap-1">
             <label class="font-medium text-surface-700 dark:text-surface-300">Year of Graduation</label>
-            <DatePicker name="medical_school_year_of_graduation" view="year" dateFormat="yy" showIcon class="w-full" />
+            <DatePicker name="medical_school_year_of_graduation" :modelValue="initialValues.medical_school_year_of_graduation" view="year" dateFormat="yy" showIcon class="w-full" />
             <Message v-if="$form.medical_school_year_of_graduation?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.medical_school_year_of_graduation.error.message }}</Message>
           </div>
            <div class="col-span-full flex flex-col gap-1">
