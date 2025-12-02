@@ -1,4 +1,16 @@
 <script setup>
+import {
+  prefixes,
+  genders,
+  spokenLanguages,
+  medicalSpecialties,
+  boardCertifications,
+  employmentTypes,
+  rolePositions,
+  emergencyContactRelationships,
+} from '~/server/data/selectOptionsData.js'
+import SignaturePadRenderer from '~/components/SignaturePadRenderer.vue'
+
 const { user, userProfile, logout } = useAuth()
 const router = useRouter()
 
@@ -17,229 +29,212 @@ watchEffect(() => {
     router.push('/login')
   }
 })
+
+// Helper functions for labels
+const getLabel = (value, options) => {
+  if (!value) return 'N/A'
+  const option = options.find(opt => opt.value === value)
+  return option ? option.label : value
+}
+
+const getLabels = (values, options) => {
+  if (!values || !Array.isArray(values) || values.length === 0) return 'N/A'
+  return values.map(val => {
+    const option = options.find(opt => opt.value === val)
+    return option ? option.label : val
+  }).join(', ')
+}
+
+// Local definition for hospitals (matching edit-user-profile.vue)
+const orgHospitals = [
+  { label: "St. Jude Medical Center", value: "sjmc-uuid" },
+  { label: "Community General Hospital", value: "cgh-uuid" },
+]
+
+// Date formatter
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  // Handle both ISO string and potential other formats if needed, but usually ISO from DB
+  return new Date(dateString).toLocaleDateString()
+}
 </script>
 
 <template>
   <div class="container mx-auto p-8">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
-        <Button label="Edit Profile" icon="pi pi-user-edit" @click="router.push('/edit-user-profile')" />
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">User Profile</h1>
+        <div class="flex gap-2">
+             <Button label="Edit Profile" icon="pi pi-user-edit" @click="router.push('/edit-user-profile')" />
+        </div>
       </div>
       
-      <div v-if="user" class="space-y-6">
-        <!-- <pre>{{ user }}</pre>
-          <pre>{{ userProfile }}</pre> -->
-        <div class="flex items-center gap-4">
-          <Avatar :image="userProfile?.avatar_url" :label="!userProfile?.avatar_url ? user.email?.charAt(0).toUpperCase() : ''" size="xlarge" shape="circle" class="flex-none bg-blue-500 text-white" />
-          <div>
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-              {{ user.email }}
-              <i v-if="user.role === 'authenticated'" class="pi pi-check-circle text-green-500 ml-2"></i>
-            </h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">User ID: {{ user.sub }}</p>
-          </div>
+      <div v-if="userProfile" class="space-y-8">
+        
+        <!-- Account Info -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Account Information</h2>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                 <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Login Email</label>
+                    <div class="text-gray-900 dark:text-white">{{ user.email }}</div>
+                 </div>
+                 <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Avatar</label>
+                    <div class="flex items-center gap-4">
+                        <Avatar :image="userProfile.avatar_url" :label="!userProfile.avatar_url ? user.email?.charAt(0).toUpperCase() : ''" size="xlarge" shape="circle" class="flex-none bg-blue-500 text-white" />
+                    </div>
+                 </div>
+            </div>
         </div>
 
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Profile Information</h3>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
-              <div class="mt-1 text-gray-900 dark:text-white">{{ user.email }}</div>
+        <!-- Personal Info -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Personal Information</h2>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Prefix</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabel(userProfile.prefix, prefixes) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">First Name</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.first_name || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Last Name</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.last_name || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Suffix</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.suffix || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Date of Birth</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ formatDate(userProfile.dob) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Gender</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabel(userProfile.gender, genders) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Personal Phone</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.phone || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Personal Email</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.personal_email || 'N/A' }}</div>
+                </div>
+                <div class="col-span-full">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Spoken Language(s)</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabels(userProfile.spoken_languages, spokenLanguages) }}</div>
+                </div>
+                
+                <!-- Address -->
+                <div class="col-span-full mt-2">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Address</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">
+                        {{ userProfile.address }}<br v-if="userProfile.address">
+                        {{ userProfile.address_line_2 }}<br v-if="userProfile.address_line_2">
+                        <span v-if="userProfile.city">{{ userProfile.city }}, </span>
+                        <span v-if="userProfile.state">{{ userProfile.state }} </span>
+                        <span v-if="userProfile.zip">{{ userProfile.zip }}</span>
+                        <div v-if="userProfile.country">{{ userProfile.country }}</div>
+                    </div>
+                </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Last Sign In</label>
-              <div class="mt-1 text-gray-900 dark:text-white">{{ user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A' }}</div>
-            </div>
-             <div>
-              <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Provider</label>
-              <div class="mt-1 text-gray-900 dark:text-white">{{ user.app_metadata.provider }}</div>
-            </div>
-            <template v-if="userProfile">
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">First Name</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.first_name || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Last Name</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.last_name || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.email || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Phone</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.phone || 'N/A' }}</div>
-              </div>
-               <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Address</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.address || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Address Line 2</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.address_line_2 || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">City</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.city || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">State</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.state || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Zip</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.zip || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Country</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.country || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Role</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.role || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Admin</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.admin ? 'Yes' : 'No' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Specialization</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.specialization || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Notes</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.notes || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Avatar URL</label>
-                <div class="mt-1 text-gray-900 dark:text-white break-all">{{ userProfile.avatar_url || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Created At</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.created_at ? new Date(userProfile.created_at).toLocaleString() : 'N/A' }}</div>
-              </div>
-               <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Updated At</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.updated_at ? new Date(userProfile.updated_at).toLocaleString() : 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Emergency Phone</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.emergency_phone || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Updated By Who</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.updated_by_who || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Primary Organization ID</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.primary_organization_id || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Suffix</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.suffix || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">DOB</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.dob || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Hospitals</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.hospitals || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Personal Email</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.personal_email || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Gender</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.gender || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Employment Type</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.employment_type || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Spoken Languages</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.spoken_languages || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical License Number</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_license_number || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical License Issuing State</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_license_issuing_state || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical License Issuing Country</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_license_issuing_country || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical License Expiration Date</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_license_expiration_date || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">DEA Number</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.dea_number || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">NPI Number</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.npi_number || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Specialties</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.specialties || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical School Attended</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_school_attended || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical School Year of Graduation</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_school_year_of_graduation || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Board Certifications</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.board_certifications || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Malpractice Insurance Provider</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.malpractice_insurance_provider || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Malpractice Policy Number</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.malpractice_policy_number || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Emergency Contact Name</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.emergency_contact_name || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Emergency Contact Phone</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.emergency_contact_phone || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Emergency Contact Relationship</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.emergency_contact_relationship || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Signature</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.signature || 'N/A' }}</div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Organization IDs</label>
-                <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.organization_ids || 'N/A' }}</div>
-              </div>
-            </template>
-          </div>
         </div>
 
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-6 flex justify-end">
-          <Button label="Logout" icon="pi pi-sign-out" severity="danger" @click="handleLogout" />
+        <!-- Emergency Contact -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Emergency Contact Information</h2>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Name</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.emergency_contact_name || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Phone</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.emergency_contact_phone || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Relationship</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabel(userProfile.emergency_contact_relationship, emergencyContactRelationships) }}</div>
+                </div>
+            </div>
         </div>
+
+        <!-- Professional Info -->
+        <div class="border-b border-gray-200 dark:border-gray-700 pb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Professional Information</h2>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Role / Position</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabel(userProfile.role, rolePositions) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Employment Type</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabel(userProfile.employment_type, employmentTypes) }}</div>
+                </div>
+                <div class="col-span-full">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Hospitals</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabels(userProfile.hospitals, orgHospitals) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical License Number</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_license_number || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">License Expiration Date</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ formatDate(userProfile.medical_license_expiration_date) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">DEA Number</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.dea_number || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">NPI Number</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.npi_number || 'N/A' }}</div>
+                </div>
+                <div class="col-span-full">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Specialties</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabels(userProfile.specialties, medicalSpecialties) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical School</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.medical_school_attended || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Graduation Year</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ formatDate(userProfile.medical_school_year_of_graduation) }}</div>
+                </div>
+                <div class="col-span-full">
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Board Certifications</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabels(userProfile.board_certifications, boardCertifications) }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Malpractice Insurance Provider</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.malpractice_insurance_provider || 'N/A' }}</div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Malpractice Policy Number</label>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ userProfile.malpractice_policy_number || 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <div>
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Signature</h2>
+            <div class="border rounded-lg p-4 bg-white">
+                <SignaturePadRenderer v-if="userProfile.signature" :svgString="userProfile.signature" />
+                <div v-else class="text-gray-500 dark:text-gray-400 italic">No signature on file</div>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+             <Button label="Logout" icon="pi pi-sign-out" severity="danger" @click="handleLogout" />
+        </div>
+
       </div>
       
       <div v-else class="text-center py-8">

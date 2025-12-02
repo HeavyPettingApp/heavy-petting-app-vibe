@@ -330,7 +330,7 @@ const updateSignatureSvgData = (svgData) => {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-6">
+  <div class="max-w-4xl mx-auto p-6 pb-24">
     <Toast />
     
     <div class="flex justify-between items-center mb-6">
@@ -562,9 +562,11 @@ const updateSignatureSvgData = (svgData) => {
         </div>
       </div>
 
-      <div class="flex justify-end gap-4">
-        <Button label="Cancel" severity="secondary" @click="router.back()" />
-        <Button label="Save Changes" type="submit" :loading="$form.submitting" />
+      <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-50">
+        <div class="max-w-4xl mx-auto flex justify-end gap-4">
+          <Button label="Cancel" severity="secondary" @click="router.back()" />
+          <Button label="Save Changes" type="submit" :loading="$form.submitting" />
+        </div>
       </div>
 
     </Form>
