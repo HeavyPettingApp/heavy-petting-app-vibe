@@ -103,6 +103,7 @@ const initialValues = ref({
   emergency_contact_name: "",
   emergency_contact_phone: "",
   emergency_contact_relationship: null,
+  notes: "",
   signature: "",
 })
 
@@ -141,6 +142,7 @@ const resolver = zodResolver(
       emergency_contact_phone: z.string().min(10, { message: "Phone number is required and must be at least 10 digits." }),
       emergency_contact_relationship: z.string().nullable().refine((val) => val !== null, { message: "Emergency contact relationship is required." }),
       avatar_url: z.string().min(1, { message: "Avatar image is required." }),
+      notes: z.string().optional(),
       signature: z.string().min(1, { message: "Signature is required." }),
     })
 )
@@ -172,6 +174,7 @@ watch(userProfile, (profile) => {
       emergency_contact_name: profile.emergency_contact_name || "",
       emergency_contact_phone: profile.emergency_contact_phone || "",
       avatar_url: profile.avatar_url || "",
+      notes: profile.notes || "",
       signature: profile.signature || "",
       
       // Ensure arrays and dates are correctly formatted
@@ -280,7 +283,9 @@ const onFormSubmit = async (e) => {
         city: initialValues.value.city,
         state: initialValues.value.state,
         zip: initialValues.value.zip,
+        zip: initialValues.value.zip,
         country: initialValues.value.country,
+        notes: e.values.notes,
       }
 
       // Cleanup
@@ -562,6 +567,15 @@ const updateSignatureSvgData = (svgData) => {
             <InputText name="malpractice_policy_number" placeholder="Policy Number" class="w-full" />
             <Message v-if="$form.malpractice_policy_number?.invalid" severity="error" size="small" variant="simple" class="mt-1">{{ $form.malpractice_policy_number.error.message }}</Message>
           </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <h2 class="text-xl font-semibold mb-4">Notes</h2>
+        <div class="flex flex-col gap-1">
+             <label class="font-medium text-surface-700 dark:text-surface-300">Additional Notes (Optional)</label>
+             <Textarea name="notes" rows="4" placeholder="Enter any additional notes here..." class="w-full" />
         </div>
       </div>
 
