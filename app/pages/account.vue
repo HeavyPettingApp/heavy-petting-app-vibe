@@ -1,5 +1,11 @@
 <script setup>
-import {
+import SignaturePadRenderer from '~/components/SignaturePadRenderer.vue'
+
+const { user, userProfile, logout } = useAuth()
+const {
+  getLabel,
+  getLabels,
+  getSupabaseLabels,
   prefixes,
   genders,
   spokenLanguages,
@@ -8,10 +14,7 @@ import {
   employmentTypes,
   rolePositions,
   emergencyContactRelationships,
-} from '~/server/data/selectOptionsData.js'
-import SignaturePadRenderer from '~/components/SignaturePadRenderer.vue'
-
-const { user, userProfile, logout } = useAuth()
+} = useSupabase()
 const router = useRouter()
 
 const handleLogout = async () => {
@@ -29,27 +32,6 @@ watchEffect(() => {
     router.push('/login')
   }
 })
-
-// Helper functions for labels
-const getLabel = (value, options) => {
-  if (!value) return 'N/A'
-  const option = options.find(opt => opt.value === value)
-  return option ? option.label : value
-}
-
-const getLabels = (values, options) => {
-  if (!values || !Array.isArray(values) || values.length === 0) return 'N/A'
-  return values.map(val => {
-    const option = options.find(opt => opt.value === val)
-    return option ? option.label : val
-  }).join(', ')
-}
-
-// Local definition for hospitals (matching edit-user-profile.vue)
-const orgHospitals = [
-  { label: "St. Jude Medical Center", value: "sjmc-uuid" },
-  { label: "Community General Hospital", value: "cgh-uuid" },
-]
 
 // Date formatter
 const formatDate = (dateString) => {
@@ -177,7 +159,7 @@ const formatDate = (dateString) => {
                 </div>
                 <div class="col-span-full">
                     <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Hospitals</label>
-                    <div class="mt-1 text-gray-900 dark:text-white">{{ getLabels(userProfile.hospitals, orgHospitals) }}</div>
+                    <div class="mt-1 text-gray-900 dark:text-white">{{ getSupabaseLabels(userProfile.hospitals, 'organizations', 'organization_name', 'organization_id') }}</div>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 dark:text-gray-400">Medical License Number</label>

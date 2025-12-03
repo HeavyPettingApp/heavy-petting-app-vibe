@@ -13,6 +13,30 @@ import {
   emergencyContactRelationships,
 } from '~/server/data/selectOptionsData.js'
 
+const orgHospitals = ref([])
+
+const fetchOrganizations = async () => {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+
+  if (error) {
+    console.error('Error fetching organizations:', error)
+    return
+  }
+
+  orgHospitals.value = data
+    .map((org) => ({
+      label: org.organization_name || org.name,
+      value: org.organization_id || org.id,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+}
+
+onMounted(() => {
+  fetchOrganizations()
+})
+
 // Load Google Maps API with Places library
 const runtimeConfig = useRuntimeConfig()
 useHead({
@@ -81,11 +105,6 @@ const initialValues = ref({
   emergency_contact_relationship: null,
   signature: "",
 })
-
-const orgHospitals = [
-  { label: "St. Jude Medical Center", value: "sjmc-uuid" },
-  { label: "Community General Hospital", value: "cgh-uuid" },
-]
 
 // Validation Schema (Copied from reference)
 const resolver = zodResolver(
